@@ -69,6 +69,19 @@ var cb2 = function (req, res) {
 
 app.get("/example/c", [cb0, cb1, cb2]);
 
+//route 활용 get / push /post
+app
+  .route("/book")
+  .get(function (req, res) {
+    res.send("Get a random book!!");
+  })
+  .post(function (req, res) {
+    res.send("Add a book");
+  })
+  .put(function (req, res) {
+    res.send("Update the book");
+  });
+
 app.listen(3000, function () {
   console.log("Example app listening on port 3000!");
 });

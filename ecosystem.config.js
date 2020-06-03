@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      script: "hello.js",
+      script: "app.js",
       watch: true,
       env: {
         NODE_ENV: "development",
@@ -10,7 +10,7 @@ module.exports = {
       env_dev: {
         name: "thisdev",
         NODE_ENV: "production",
-        watch: false,
+        watch: true,
       },
       env_production: {
         NODE_ENV: "production",
