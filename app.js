@@ -1,5 +1,6 @@
 import express from "express";
 import sequelize from "./db_connect";
+import User from "./model/user";
 var app = express();
 
 // GET method route
@@ -90,6 +91,49 @@ app
   .put(function (req, res) {
     res.send("Update the book");
   });
+
+app.get("/userAdd", function (req, res) {
+  // 새로운 유저 생성
+  User.create({ firstName: "John", lastName: "Doe" }).then((user) => {
+    console.log("Jane's auto-generated ID:", user.id);
+    res.send(`${user.firstName} ${user.lastName} add success`);
+  });
+});
+
+app.get("/userUpdate", function (req, res) {
+  // 성이 없는 모든 사용자를 "Doe"로 변경
+  User.update(
+    { lastName: "Doe" },
+    {
+      where: {
+        lastName: null,
+      },
+    }
+  ).then(() => {
+    console.log("update Done");
+    res.send("user update success");
+  });
+});
+
+app.get("/userDelete", function (req, res) {
+  // Jane 이라는 이름을 가진 사람 삭제
+  User.destroy({
+    where: {
+      firstName: "Jane",
+    },
+  }).then(() => {
+    console.log("Done");
+    res.send("user delete success");
+  });
+});
+
+app.get("/userFindAll", function (req, res) {
+  // 모든 유저 찾기
+  User.findAll().then((users) => {
+    console.log("All users:", JSON.stringify(users, null, 4));
+    res.send(`${JSON.stringify(users, null, 4)} \n \n user FindAll success`);
+  });
+});
 
 app.listen(3000, function () {
   console.log("Example app listening on port 3000!");
