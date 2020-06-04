@@ -1,9 +1,18 @@
-var express = require("express");
+import express from "express";
+import sequelize from "./db_connect";
 var app = express();
 
 // GET method route
 app.get("/", function (req, res) {
   res.send("GET request to the homepage!!!!");
+  sequelize
+    .authenticate()
+    .then(() => {
+      console.log("Connection has been established successfully.");
+    })
+    .catch((err) => {
+      console.error("Unable to connect to the database:", err);
+    });
 });
 
 // POST method route
