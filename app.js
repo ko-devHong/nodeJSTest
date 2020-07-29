@@ -1,11 +1,19 @@
 import express from "express";
 import sequelize from "./db_connect";
 import User from "./model/user";
+import swaggerDoc from "./swaggerDoc";
+import ROUTER from "./board";
+import zeroPayAPI, { STORE_KEY } from "./config/restApi";
+import CryptoJS from "crypto-js";
+import moment from "moment";
 var app = express();
+
+app.use(ROUTER);
+app.use(swaggerDoc);
 
 // GET method route
 app.get("/", function (req, res) {
-  res.send("GET request to the homepage!!!!");
+  res.send("GET request to the homepage!!");
   sequelize
     .authenticate()
     .then(() => {
@@ -45,10 +53,10 @@ app.get("/ab(cd)?e", function (req, res) {
   res.send("ab(cd)?e");
 });
 
-// z 가 포함된 모든 항목
-app.get(/z/, function (req, res) {
-  res.send("/z/ 가 포함됨 ");
-});
+// // z 가 포함된 모든 항목
+// app.get(/z/, function (req, res) {
+//   res.send("/z/ 가 포함됨 ");
+// });
 
 // 콘솔 로그가 먼저 보인후 문자가 보여짐
 app.get(
@@ -133,6 +141,84 @@ app.get("/userFindAll", function (req, res) {
     console.log("All users:", JSON.stringify(users, null, 4));
     res.send(`${JSON.stringify(users, null, 4)} \n \n user FindAll success`);
   });
+});
+
+const EncryptHex = (string, chip) => {
+  let result = "";
+  try {
+    if (chip === "AES") {
+      result = CryptoJS.AES.encrypt(string, STORE_KEY).toString();
+      result = CryptoJS.enc.Base64.parse(result);
+      result = result.toString(CryptoJS.enc.Hex);
+    } else {
+      result = CryptoJS.HmacSHA256(string, STORE_KEY).toString(
+        CryptoJS.enc.Hex
+      );
+    }
+    return result;
+  } catch (error) {
+    throw error;
+  }
+};
+
+app.get("/zeropayReady", async (req, res) => {
+  const MID = "ZP2007000083";
+  const params = {};
+  const productItems = [];
+  const productItem = {};
+  const productItem2 = {};
+  const body = {};
+  productItem.seq = 1;
+  productItem.name = "[오더프레쉬] 못난이(흠과) 사과 5kg (과수크기랜덤발송)";
+  productItem.category = "F";
+  productItem.count = 2;
+  productItem.amount = 1000;
+  productItem.biz_no = "123456790";
+  productItems.push(productItem);
+  productItem2.seq = 2;
+  productItem2.name = "실속혼합과일선물세트5호(사과4과/배1과)";
+  productItem2.category = "F";
+  productItem2.count = 1;
+  productItem2.amount = 500;
+  productItem2.biz_no = "123456790";
+  productItems.push(productItem2);
+
+  params.mid = MID;
+  params.mode = "development";
+  params.merchantOrderID = "20200723_order_id1234";
+  params.merchantUserKey = "test_mall_userkey";
+  params.productName =
+    "[오더프레쉬] 못난이(흠과) 사과 5kg (과수크기랜덤발송) 포함 총2건";
+  params.quantity = 3;
+  params.totalAmount = 1500;
+  params.taxFreeAmount = 0;
+  params.vatAmount = 137;
+  params.approvalURL = "http://test.co.kr/succ_url";
+  params.cancelURL = "http://test.co.kr/cancel_url";
+  params.failURL = "http://test.co.kr/fail_url";
+  params.apiCallYn = "N";
+  params.payrCi = "";
+  params.clphNo = "";
+  params.zip_no = "";
+  params.productItems = productItems;
+  try {
+    const date = moment(new Date()).format("yyyyMMddkkmmss");
+    const reqEV = await EncryptHex(JSON.stringify(params), "AES");
+    const reqVV = await EncryptHex(JSON.stringify(params), "SHA");
+    body.MID = MID;
+    body.RQ_DTIME = date;
+    body.TNO = date;
+    body.EV = reqEV;
+    body.VV = reqVV;
+    body.RC = "";
+    body.RM = "";
+
+    // 결제 준비
+    const { data } = await zeroPayAPI.post("/api_v1_payment_reserve.jct", body);
+    res.send(data);
+  } catch (error) {
+    throw error;
+  }
 });
 
 app.listen(3000, function () {
