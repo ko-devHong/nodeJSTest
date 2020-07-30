@@ -149,13 +149,17 @@ app.get('/userFindAll', function (req, res) {
 const EncryptHex = (string, chip) => {
   let result = '';
   try {
+    const key = CryptoJS.enc.Hex.parse(STORE_KEY);
     if (chip === 'AES') {
-      result = CryptoJS.AES.encrypt(string, STORE_KEY);
+      const iv = CryptoJS.lib.WordArray.create([0x00, 0x00, 0x00, 0x00]);
+      result = CryptoJS.AES.encrypt(string, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+      });
       result = result.ciphertext.toString(CryptoJS.enc.Hex);
+      DecryptHex(result, 'AES', STORE_KEY);
     } else {
-      result = CryptoJS.HmacSHA256(string, STORE_KEY).toString(
-        CryptoJS.enc.Hex
-      );
+      result = CryptoJS.HmacSHA256(string, key).toString(CryptoJS.enc.Hex);
     }
     return result;
   } catch (error) {
@@ -165,10 +169,18 @@ const EncryptHex = (string, chip) => {
 
 const DecryptHex = (string, chip, skey) => {
   let result = '';
+  const key = CryptoJS.enc.Hex.parse(skey);
+  const iv = CryptoJS.lib.WordArray.create([0x00, 0x00, 0x00, 0x00]);
   try {
-    result = CryptoJS.enc.Hex.parse(string);
+    const array = CryptoJS.enc.Hex.parse(string);
     if (chip === 'AES') {
-      result = CryptoJS.AES.decrypt(result, skey);
+      result = CryptoJS.AES.decrypt(array, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+      }).toString();
+      console.log('$$$$');
+      console.log('result : ', result);
+      console.log('$$$$');
     }
     return result;
   } catch (error) {
@@ -176,10 +188,19 @@ const DecryptHex = (string, chip, skey) => {
   }
 };
 
-const verifyMac = (skey, data, hmac) => {
-  const decryptedData = DecryptHex(data, 'AES', skey);
+const verifyMac = (skey, res_ev, res_vv) => {
+  const decryptedData = DecryptHex(res_ev, 'AES', skey);
   const checkHmac = EncryptHex(decryptedData, 'SHA');
-  if (hmac === checkHmac) {
+  console.log('$$$$');
+  console.log('decryptedData : ', decryptedData);
+  console.log('$$$$');
+  console.log('$$$$');
+  console.log('res_vv : ' + res_vv);
+  console.log('$$$$');
+  console.log('$$$$');
+  console.log('checkHmac : ' + checkHmac);
+  console.log('$$$$');
+  if (res_vv === checkHmac) {
     return true;
   } else {
     return false;
@@ -194,7 +215,7 @@ app.get('/zeropayReady', async (req, res) => {
   const productItem2 = {};
   const body = {};
   productItem.seq = 1;
-  productItem.name = '[오더프레쉬] 못난이(흠과) 사과 5kg (과수크기랜덤발송)';
+  productItem.name = '[오더프레쉬] 못난이(흠과) 사과 5kg (과수크기 랜덤발송)';
   productItem.category = 'F';
   productItem.count = 2;
   productItem.amount = 1000;
@@ -208,23 +229,23 @@ app.get('/zeropayReady', async (req, res) => {
   productItem2.biz_no = '123456790';
   productItems.push(productItem2);
 
-  params.mid = MID;
-  params.mode = 'development';
-  params.merchantOrderID = '20200723_order_id1234';
-  params.merchantUserKey = 'test_mall_userkey';
+  params.mid = MID; // 가맹점 코드
+  params.mode = 'development'; //개발환경
+  params.merchantOrderID = '20200723_order_id1234'; //가맹점 주문번호
+  params.merchantUserKey = 'test_mall_userkey'; // 가맹점 회원키
   params.productName =
-    '[오더프레쉬] 못난이(흠과) 사과 5kg (과수크기랜덤발송) 포함 총2건';
-  params.quantity = 3;
-  params.totalAmount = 1500;
-  params.taxFreeAmount = 0;
-  params.vatAmount = 137;
-  params.approvalURL = 'http://localhost:3000/zeropay/result?type=success';
+    '[오더프레쉬] 못난이(흠과) 사과 5kg (과수크기 랜덤발송) 포함 총2건'; //상품 표시명
+  params.quantity = 3; // 상품 총수량
+  params.totalAmount = 1500; // 상품권 총금액
+  params.taxFreeAmount = 0; // 상품비과세금액
+  params.vatAmount = 137; // 상품 부가세 금액
+  params.approvalURL = 'http://localhost:3000/zeropay/result?type=success'; // 결제승인 성공시 return url
   params.cancelURL = 'http://localhost:3000/zeropay/result?type=cancel';
   params.failURL = 'http://localhost:3000/zeropay/result?type=fail';
-  params.apiCallYn = 'N';
+  params.apiCallYn = 'N'; // API 호출여부(API,복합: Y, 화면: N )
   params.payrCi = '';
   params.clphNo = '';
-  params.zip_no = '';
+  params.zip_no = '010';
   params.productItems = productItems;
 
   try {
@@ -286,7 +307,7 @@ const zeroPayAgreement = async (params) => {
       );
       return data;
     } else {
-      throw 'data null';
+      return null;
     }
   } catch (error) {
     throw error;
