@@ -1,5 +1,5 @@
-import Sequelize from "sequelize";
-import CONFIG from "./db_config";
+import Sequelize from 'sequelize';
+import CONFIG from './db_config';
 
 // Option 1: Passing parameters separately
 const sequelize = new Sequelize(

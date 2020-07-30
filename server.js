@@ -1,26 +1,26 @@
-var http = require("http");
-var fs = require("fs");
-var url = require("url");
+var http = require('http');
+var fs = require('fs');
+var url = require('url');
 
 http
   .createServer((request, response) => {
     var pathname = url.parse(request.url).pathname;
 
-    console.log("pathname :" + pathname);
+    console.log('pathname :' + pathname);
 
     // html 파일로 이동
-    if (pathname == "/") {
-      pathname = "/views/index.html";
-    } else if (pathname == "/about") {
-      pathname = "/views/about.html";
+    if (pathname == '/') {
+      pathname = '/views/index.html';
+    } else if (pathname == '/about') {
+      pathname = '/views/about.html';
     }
 
     fs.readFile(pathname.substr(1), (err, data) => {
       if (err) {
         console.log(err);
-        response.writeHead(404, { "Content-Type:": "text/html" });
+        response.writeHead(404, { 'Content-Type:': 'text/html' });
       } else {
-        response.writeHead(200, { "Content-Type": "text/html" });
+        response.writeHead(200, { 'Content-Type': 'text/html' });
         response.write(data.toString());
       }
       response.end();
@@ -28,4 +28,4 @@ http
   })
   .listen(8081);
 
-console.log("Server running at http://127.0.01:8081");
+console.log('Server running at http://127.0.01:8081');

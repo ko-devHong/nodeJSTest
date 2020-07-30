@@ -4,6 +4,8 @@ export const AUTH_KEY = "OyPVN.pAgCG04mkC1YvARe95CDK4OQPQsXU0lxNYcwKdIuOXuZRLK";
 
 export const STORE_KEY = "71304665387239306661787956754738"; // 암호화 복호화 키
 
+export const MID = "ZP2007000083";
+
 export const zeropayApi = axios.create({
   baseURL: "https://zpg.dev-zeropaypoint.or.kr/",
   headers: {

@@ -1,5 +1,5 @@
-import express from "express";
-import User from "./model/user";
+import express from 'express';
+import User from './model/user';
 
 const router = express.Router();
 
@@ -49,7 +49,7 @@ const router = express.Router();
  *          items:
  *           $ref: '#/definitions/usersItem'
  */
-router.get("/swagger/users", async (req, res) => {
+router.get('/swagger/users', async (req, res) => {
   const users = await User.findAll();
   return res.json(users);
 });
@@ -72,7 +72,7 @@ router.get("/swagger/users", async (req, res) => {
  *          items:
  *           $ref: '#/definitions/boardItem'
  */
-router.get("/boards/:id", async (req, res) => {
+router.get('/boards/:id', async (req, res) => {
   //   const board = await db.board.findOne({
   //     where: { id: req.params.id },
   //   });
