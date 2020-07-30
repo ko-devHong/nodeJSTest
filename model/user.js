@@ -1,8 +1,8 @@
-import sequelize from "../db_connect";
-import Sequelize from "sequelize";
+import sequelize from '../db_connect';
+import Sequelize from 'sequelize';
 
 const User = sequelize.define(
-  "user",
+  'user',
   {
     // attributes
     firstName: {
